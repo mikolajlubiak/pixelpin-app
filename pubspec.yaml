@@ -1,0 +1,49 @@
+name: edown
+description: Application for the EDown pins.
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=2.17.0'
+  flutter: ">=2.0.0"
+
+dependencies:
+  file_picker: ^8.3.1
+  flutter:
+    sdk: flutter
+  flutter_reactive_ble: ^5.4.0
+  functional_data: ^1.0.0
+  intl: ^0.17.0
+  permission_handler: ^11.3.1
+  provider: ^6.0.1
+  image: ^4.5.2
+
+dev_dependencies:
+  build_runner: ^2.3.3
+  dependency_validator: ^3.1.0
+  flutter_lints: ^1.0.4
+  flutter_test:
+    sdk: flutter
+  functional_data_generator: ^1.1.2
+  flutter_launcher_icons: "^0.14.3"
+
+flutter:
+  uses-material-design: true
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "icon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "icon.png"
+    background_color: "#9b3f35"
+    theme_color: "#9b3f35"
+  windows:
+    generate: true
+    image_path: "icon.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "icon.png"

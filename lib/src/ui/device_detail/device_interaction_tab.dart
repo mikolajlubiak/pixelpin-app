@@ -6,7 +6,6 @@ import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
-import 'dart:io';
 import 'dart:convert';
 import 'package:image/image.dart' as img;
 
@@ -133,7 +132,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       // Get the chunk
       Uint8List chunk = data.sublist(i, end);
 
-      // Process the chunk (for demonstration, we will just print it)
+      // Process the chunk
       characteristic.write(chunk);
     }
   }
@@ -233,10 +232,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       await characteristic.write(utf8.encode("BEGIN"));
 
       await characteristic.write(utf8.encode("MONO BUFFER"));
-      writeInChunks(monoBuffer, 256, characteristic);
+      writeInChunks(monoBuffer, 16, characteristic);
 
       await characteristic.write(utf8.encode("COLOR BUFFER"));
-      writeInChunks(colorBuffer, 256, characteristic);
+      writeInChunks(colorBuffer, 16, characteristic);
 
       setState(() {
         writeOutput = "Image sent.";

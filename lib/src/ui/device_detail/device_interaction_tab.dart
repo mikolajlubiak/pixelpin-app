@@ -123,8 +123,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     });
   }
 
-  void writeInChunks(
-      Uint8List data, int chunkSize, Characteristic characteristic) {
+  Future<void> writeInChunks(
+      Uint8List data, int chunkSize, Characteristic characteristic) async {
     for (int i = 0; i < data.length; i += chunkSize) {
       // Calculate the end index for the chunk
       int end = (i + chunkSize < data.length) ? i + chunkSize : data.length;
@@ -133,7 +133,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       Uint8List chunk = data.sublist(i, end);
 
       // Process the chunk
-      characteristic.write(chunk);
+      await characteristic.write(chunk);
     }
   }
 
@@ -232,10 +232,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       await characteristic.write(utf8.encode("BEGIN"));
 
       await characteristic.write(utf8.encode("MONO BUFFER"));
-      writeInChunks(monoBuffer, 16, characteristic);
+      await writeInChunks(monoBuffer, 256, characteristic);
 
       await characteristic.write(utf8.encode("COLOR BUFFER"));
-      writeInChunks(colorBuffer, 16, characteristic);
+      await writeInChunks(colorBuffer, 256, characteristic);
 
       setState(() {
         writeOutput = "Image sent.";

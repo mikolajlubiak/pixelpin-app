@@ -87,21 +87,14 @@ class _DeviceInteractionTab extends StatefulWidget {
   _DeviceInteractionTabState createState() => _DeviceInteractionTabState();
 }
 
-// for up to 7.8" display 1872x1404
-// int MAX_ROW = 1872;
-// int MAX_COL = 1404;
-int MAX_ROW = (296).toInt();
-int MAX_COL = (128 / 8).toInt();
-int BUFFER_SIZE = MAX_ROW * MAX_COL;
-
 class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late List<Service> discoveredServices;
 
   int _rssi = 0;
   String writeOutput = "Select file to send";
 
-  Uint8List monoBuffer = Uint8List(BUFFER_SIZE);
-  Uint8List colorBuffer = Uint8List(BUFFER_SIZE);
+  Uint8List monoBuffer = Uint8List(0);
+  Uint8List colorBuffer = Uint8List(0);
 
   @override
   void initState() {
@@ -179,8 +172,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         if ((7 == col % 8) ||
             (col == width - 1)) // write that last byte! (for w%8!=0 border)
         {
-          monoBuffer[row * MAX_COL + out_col_idx] = out_byte;
-          colorBuffer[row * MAX_COL + out_col_idx] = out_color_byte;
+          monoBuffer[row * (width / 8).ceil() + out_col_idx] = out_byte;
+          colorBuffer[row * (width / 8).ceil() + out_col_idx] = out_color_byte;
           out_col_idx++;
           out_byte = 0xFF; // white (for w%8!=0 border)
           out_color_byte = 0xFF; // white (for w%8!=0 border)
@@ -220,6 +213,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       img.Image image = img.copyResize(
           (await img.decodeImageFile(result.files.single.path!))!,
           width: 128);
+      monoBuffer = Uint8List(image.height * (image.width / 8).ceil());
+      colorBuffer = Uint8List(image.height * (image.width / 8).ceil());
 
       setState(() {
         writeOutput = "Converting image.";
@@ -232,10 +227,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       await characteristic.write(utf8.encode("BEGIN"));
 
       await characteristic.write(utf8.encode("MONO BUFFER"));
-      await writeInChunks(monoBuffer, 256, characteristic);
+      await writeInChunks(monoBuffer, 512, characteristic);
 
       await characteristic.write(utf8.encode("COLOR BUFFER"));
-      await writeInChunks(colorBuffer, 256, characteristic);
+      await writeInChunks(colorBuffer, 512, characteristic);
 
       setState(() {
         writeOutput = "Image sent.";

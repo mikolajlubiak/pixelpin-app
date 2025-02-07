@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:image/image.dart' as img;
+import 'package:dither_it/dither_it.dart';
 
 import 'characteristic_interaction_dialog.dart';
 
@@ -210,9 +211,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       setState(() {
         writeOutput = "Decoding image.";
       });
-      img.Image image = img.copyResize(
-          (await img.decodeImageFile(result.files.single.path!))!,
-          width: 128);
+      img.Image image = (await img.decodeImageFile(result.files.single.path!))!;
+      image = img.copyResize(image, width: 128);
+      image = DitherIt.ordered(image: image, matrixSize: 8);
       monoBuffer = Uint8List(image.height * (image.width / 8).ceil());
       colorBuffer = Uint8List(image.height * (image.width / 8).ceil());
 

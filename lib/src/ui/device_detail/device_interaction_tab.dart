@@ -95,10 +95,11 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   Uint8List monoBuffer = Uint8List(0);
   Uint8List colorBuffer = Uint8List(0);
-  Function(img.Image) ditherFunction = ditherFloydSteinberg;
+  Function(img.Image) ditherFunction = noDither;
 
   static const List<img.Image Function(img.Image)> ditherFunctions = <img.Image
       Function(img.Image)>[
+    noDither,
     ditherFloydSteinberg,
     ditherOrdered,
     ditherRiemersma
@@ -106,6 +107,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   static const Map<img.Image Function(img.Image), String>
       ditherFunctionsToAlgoNames = <img.Image Function(img.Image), String>{
+    noDither: "No dither",
     ditherFloydSteinberg: "Floyd Steinberg",
     ditherOrdered: "Ordered",
     ditherRiemersma: "Riemersma"
@@ -288,7 +290,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                         onChanged: (Function(img.Image)? value) {
                           // This is called when the user selects an item.
                           setState(() {
-                            ditherFunction = value ?? ditherFloydSteinberg;
+                            ditherFunction = value ?? noDither;
                           });
                         },
                         items: ditherFunctions

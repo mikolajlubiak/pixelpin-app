@@ -68,6 +68,10 @@ void convertImage(
   }
 }
 
+img.Image noDither(img.Image image) {
+  return image;
+}
+
 img.Image ditherFloydSteinberg(img.Image image) {
   return DitherIt.floydSteinberg(image: image);
 }

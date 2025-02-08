@@ -8,8 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:image/image.dart' as img;
-import 'package:dither_it/dither_it.dart';
-
+import 'package:edown/src/img/img.dart';
 import 'characteristic_interaction_dialog.dart';
 
 part 'device_interaction_tab.g.dart';
@@ -96,6 +95,21 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   Uint8List monoBuffer = Uint8List(0);
   Uint8List colorBuffer = Uint8List(0);
+  Function(img.Image) ditherFunction = ditherFloydSteinberg;
+
+  static const List<img.Image Function(img.Image)> ditherFunctions = <img.Image
+      Function(img.Image)>[
+    ditherFloydSteinberg,
+    ditherOrdered,
+    ditherRiemersma
+  ];
+
+  static const Map<img.Image Function(img.Image), String>
+      ditherFunctionsToAlgoNames = <img.Image Function(img.Image), String>{
+    ditherFloydSteinberg: "Floyd Steinberg",
+    ditherOrdered: "Ordered",
+    ditherRiemersma: "Riemersma"
+  };
 
   @override
   void initState() {
@@ -115,72 +129,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     setState(() {
       _rssi = rssi;
     });
-  }
-
-  Future<void> writeInChunks(
-      Uint8List data, int chunkSize, Characteristic characteristic) async {
-    for (int i = 0; i < data.length; i += chunkSize) {
-      // Calculate the end index for the chunk
-      int end = (i + chunkSize < data.length) ? i + chunkSize : data.length;
-
-      // Get the chunk
-      Uint8List chunk = data.sublist(i, end);
-
-      // Process the chunk
-      await characteristic.write(chunk);
-    }
-  }
-
-  void convertImage(img.Image image) {
-    int width = image.width;
-    int height = image.height;
-
-    Uint8List rgbBytes = image.getBytes(order: img.ChannelOrder.rgb);
-
-    int red, green, blue;
-    bool whitish = false;
-    bool colored = false;
-    bool with_color = true;
-    int out_byte = 0xFF; // white (for w%8!=0 border)
-    int out_color_byte = 0xFF; // white (for w%8!=0 border)
-    int out_col_idx = 0;
-
-    for (int row = 0; row < height; row++) {
-      out_col_idx = 0;
-      for (int col = 0; col < width; col++) {
-        int index = (row * width + col) * 3;
-        red = rgbBytes[index];
-        green = rgbBytes[index + 1];
-        blue = rgbBytes[index + 2];
-
-        whitish =
-            (red * 0.299 + green * 0.587 + blue * 0.114) > 0x80; // whitish
-
-        colored = ((red > 0x80) &&
-                (((red > green + 0x40) && (red > blue + 0x40)) ||
-                    (red + 0x10 > green + blue))) ||
-            (green > 0xC8 &&
-                red > 0xC8 &&
-                blue < 0x40); // reddish or yellowish?
-
-        if (whitish) {
-          // keep white
-        } else if (colored && with_color) {
-          out_color_byte &= ~(0x80 >> col % 8); // colored
-        } else {
-          out_byte &= ~(0x80 >> col % 8); // black
-        }
-        if ((7 == col % 8) ||
-            (col == width - 1)) // write that last byte! (for w%8!=0 border)
-        {
-          monoBuffer[row * (width / 8).ceil() + out_col_idx] = out_byte;
-          colorBuffer[row * (width / 8).ceil() + out_col_idx] = out_color_byte;
-          out_col_idx++;
-          out_byte = 0xFF; // white (for w%8!=0 border)
-          out_color_byte = 0xFF; // white (for w%8!=0 border)
-        }
-      }
-    }
   }
 
   Future<void> sendFile() async {
@@ -213,14 +161,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       });
       img.Image image = (await img.decodeImageFile(result.files.single.path!))!;
       image = img.copyResize(image, width: 128);
-      image = DitherIt.ordered(image: image, matrixSize: 8);
+      image = ditherFunction(image);
       monoBuffer = Uint8List(image.height * (image.width / 8).ceil());
       colorBuffer = Uint8List(image.height * (image.width / 8).ceil());
 
       setState(() {
         writeOutput = "Converting image.";
       });
-      convertImage(image);
+      convertImage(image, monoBuffer, colorBuffer);
 
       setState(() {
         writeOutput = "Sending image.";
@@ -328,6 +276,31 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                         onPressed: sendFile,
                         child: const Text("Send file"),
                       ),
+                      DropdownButton<Function(img.Image)>(
+                        value: ditherFunction,
+                        icon: const Icon(Icons.arrow_downward),
+                        elevation: 16,
+                        style: const TextStyle(color: Colors.deepPurple),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.deepPurpleAccent,
+                        ),
+                        onChanged: (Function(img.Image)? value) {
+                          // This is called when the user selects an item.
+                          setState(() {
+                            ditherFunction = value ?? ditherFloydSteinberg;
+                          });
+                        },
+                        items: ditherFunctions
+                            .map<DropdownMenuItem<Function(img.Image)>>(
+                                (Function(img.Image) value) {
+                          return DropdownMenuItem<Function(img.Image)>(
+                            value: value,
+                            child:
+                                Text(ditherFunctionsToAlgoNames[value] ?? ""),
+                          );
+                        }).toList(),
+                      )
                     ],
                   ),
                 ),

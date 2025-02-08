@@ -4,7 +4,8 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class BleDeviceInteractor {
   BleDeviceInteractor({
-    required Future<List<Service>> Function(String deviceId) bleDiscoverServices,
+    required Future<List<Service>> Function(String deviceId)
+        bleDiscoverServices,
     required void Function(String message) logMessage,
     required this.readRssi,
   })  : _bleDiscoverServices = bleDiscoverServices,

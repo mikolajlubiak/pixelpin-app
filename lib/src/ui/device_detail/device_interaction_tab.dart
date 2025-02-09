@@ -90,11 +90,14 @@ class _DeviceInteractionTab extends StatefulWidget {
 class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late List<Service> discoveredServices;
 
-  int _rssi = 0;
   String writeOutput = "Select file to send";
 
-  Uint8List monoBuffer = Uint8List(0);
-  Uint8List colorBuffer = Uint8List(0);
+  late Uint8List monoBuffer;
+  late Uint8List colorBuffer;
+
+  Image? selectedImage = null;
+  Image? ditheredImage = null;
+
   Function(img.Image) ditherFunction = noDither;
 
   static const List<img.Image Function(img.Image)> ditherFunctions = <img.Image
@@ -116,6 +119,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   @override
   void initState() {
     discoveredServices = [];
+    widget.viewModel.connect();
     super.initState();
   }
 
@@ -126,20 +130,11 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     });
   }
 
-  Future<void> readRssi() async {
-    final rssi = await widget.viewModel.readRssi();
-    setState(() {
-      _rssi = rssi;
-    });
-  }
-
   Future<void> sendFile() async {
-    if (!widget.viewModel.deviceConnected) {
-      widget.viewModel.connect();
-    }
+    FilePickerResult? pickerResult = await FilePicker.platform.pickFiles();
 
     while (!widget.viewModel.deviceConnected) {
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(Duration(milliseconds: 100));
     }
 
     await discoverServices();
@@ -155,22 +150,29 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             Uuid.parse("beb5483e-36e1-4688-b7f5-ea07361b26a8"))
         .single;
 
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-    if (result != null && result.files.single.path != null) {
+    if (pickerResult != null && pickerResult.files.single.path != null) {
       setState(() {
         writeOutput = "Decoding image.";
       });
-      img.Image image = (await img.decodeImageFile(result.files.single.path!))!;
+
+      img.Image image =
+          (await img.decodeImageFile(pickerResult.files.single.path!))!;
+
+      selectedImage = Image.memory(img.encodePng(image), fit: BoxFit.scaleDown);
+
       image = img.copyResize(image, width: 128);
       image = ditherFunction(image);
+
+      ditheredImage = Image.memory(img.encodePng(image), fit: BoxFit.scaleDown);
+
       monoBuffer = Uint8List(image.height * (image.width / 8).ceil());
       colorBuffer = Uint8List(image.height * (image.width / 8).ceil());
 
       setState(() {
         writeOutput = "Converting image.";
       });
-      convertImage(image, monoBuffer, colorBuffer);
+      convertImage(image.convert(format: img.Format.uint8, numChannels: 3),
+          monoBuffer, colorBuffer);
 
       setState(() {
         writeOutput = "Sending image.";
@@ -206,37 +208,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           SliverList(
             delegate: SliverChildListDelegate.fixed(
               [
-                /*
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                      top: 8.0, bottom: 16.0, start: 16.0),
-                  child: Text(
-                    "ID: ${widget.viewModel.deviceId}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 16.0),
-                  child: Text(
-                    "Connectable: ${widget.viewModel.connectableStatus}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 16.0),
-                  child: Text(
-                    "Connection: ${widget.viewModel.connectionStatus}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 16.0),
-                  child: Text(
-                    "Rssi: $_rssi dB",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                */
                 Padding(
                   padding: const EdgeInsetsDirectional.only(start: 16.0),
                   child: Text(
@@ -249,31 +220,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                   child: Wrap(
                     alignment: WrapAlignment.spaceEvenly,
                     children: <Widget>[
-                      /*
-                      ElevatedButton(
-                        onPressed: !widget.viewModel.deviceConnected
-                            ? widget.viewModel.connect
-                            : null,
-                        child: const Text("Connect"),
-                      ),
-                      ElevatedButton(
-                        onPressed: widget.viewModel.deviceConnected
-                            ? widget.viewModel.disconnect
-                            : null,
-                        child: const Text("Disconnect"),
-                      ),
-                      ElevatedButton(
-                        onPressed: widget.viewModel.deviceConnected
-                            ? discoverServices
-                            : null,
-                        child: const Text("Discover Services"),
-                      ),
-                      ElevatedButton(
-                        onPressed:
-                            widget.viewModel.deviceConnected ? readRssi : null,
-                        child: const Text("Get RSSI"),
-                      ),
-                      */
                       ElevatedButton(
                         onPressed: sendFile,
                         child: const Text("Send file"),
@@ -306,13 +252,18 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                     ],
                   ),
                 ),
-                /*
-                if (widget.viewModel.deviceConnected)
-                  _ServiceDiscoveryList(
-                    deviceId: widget.viewModel.deviceId,
-                    discoveredServices: discoveredServices,
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 16.0),
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceEvenly,
+                    children: <Widget>[
+                      if (selectedImage != null && ditheredImage != null) ...[
+                        selectedImage!,
+                        ditheredImage!,
+                      ]
+                    ],
                   ),
-                  */
+                ),
               ],
             ),
           ),

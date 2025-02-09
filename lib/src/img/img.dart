@@ -20,6 +20,8 @@ Future<void> writeInChunks(
 
 void convertImage(
     img.Image image, Uint8List monoBuffer, Uint8List colorBuffer) {
+  const bool with_color = true;
+
   int width = image.width;
   int height = image.height;
 
@@ -28,9 +30,8 @@ void convertImage(
   int red, green, blue;
   bool whitish = false;
   bool colored = false;
-  bool with_color = true;
-  int out_byte = 0xFF; // white (for w%8!=0 border)
-  int out_color_byte = 0xFF; // white (for w%8!=0 border)
+  int out_byte = 0xFF; // white
+  int out_color_byte = 0xFF; // no color
   int out_col_idx = 0;
 
   for (int row = 0; row < height; row++) {

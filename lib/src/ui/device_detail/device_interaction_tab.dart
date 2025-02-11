@@ -10,10 +10,13 @@ import 'dart:convert';
 import 'package:image/image.dart' as img;
 import 'package:edown/src/img/img.dart';
 import 'characteristic_interaction_dialog.dart';
+import 'package:edown/src/ble/write_image.dart';
 
 part 'device_interaction_tab.g.dart';
 
-// ignore_for_file: annotate_overrides
+final Uuid SERVICE_UUID = Uuid.parse("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
+final Uuid CHARACTERISTIC_UUID =
+    Uuid.parse("beb5483e-36e1-4688-b7f5-ea07361b26a8");
 
 class DeviceInteractionTab extends StatelessWidget {
   const DeviceInteractionTab({
@@ -90,15 +93,15 @@ class _DeviceInteractionTab extends StatefulWidget {
 class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late List<Service> discoveredServices;
 
-  String writeOutput = "Select file to send";
-
   late Uint8List monoBuffer;
   late Uint8List colorBuffer;
+
+  String writeOutput = "Select file to send";
 
   Image? selectedImage = null;
   Image? ditheredImage = null;
 
-  Function(img.Image) ditherFunction = noDither;
+  img.Image Function(img.Image) ditherFunction = noDither;
 
   static const List<img.Image Function(img.Image)> ditherFunctions = <img.Image
       Function(img.Image)>[
@@ -130,7 +133,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     });
   }
 
-  Future<void> sendFile() async {
+  Future<void> sendImage() async {
     FilePickerResult? pickerResult = await FilePicker.platform.pickFiles();
 
     while (!widget.viewModel.deviceConnected) {
@@ -140,14 +143,11 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     await discoverServices();
 
     final Service service = discoveredServices
-        .where((service) =>
-            service.id == Uuid.parse("4fafc201-1fb5-459e-8fcc-c5c9c331914b"))
+        .where((service) => service.id == SERVICE_UUID)
         .single;
 
     final Characteristic characteristic = service.characteristics
-        .where((characteristic) =>
-            characteristic.id ==
-            Uuid.parse("beb5483e-36e1-4688-b7f5-ea07361b26a8"))
+        .where((characteristic) => characteristic.id == CHARACTERISTIC_UUID)
         .single;
 
     if (pickerResult != null && pickerResult.files.single.path != null) {
@@ -221,10 +221,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                     alignment: WrapAlignment.spaceEvenly,
                     children: <Widget>[
                       ElevatedButton(
-                        onPressed: sendFile,
+                        onPressed: sendImage,
                         child: const Text("Send file"),
                       ),
-                      DropdownButton<Function(img.Image)>(
+                      DropdownButton<img.Image Function(img.Image)>(
                         value: ditherFunction,
                         icon: const Icon(Icons.arrow_downward),
                         elevation: 16,
@@ -233,16 +233,18 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                           height: 2,
                           color: Colors.deepPurpleAccent,
                         ),
-                        onChanged: (Function(img.Image)? value) {
+                        onChanged: (img.Image Function(img.Image)? value) {
                           // This is called when the user selects an item.
                           setState(() {
                             ditherFunction = value ?? noDither;
                           });
                         },
-                        items: ditherFunctions
-                            .map<DropdownMenuItem<Function(img.Image)>>(
-                                (Function(img.Image) value) {
-                          return DropdownMenuItem<Function(img.Image)>(
+                        items: ditherFunctions.map<
+                                DropdownMenuItem<
+                                    img.Image Function(img.Image)>>(
+                            (img.Image Function(img.Image) value) {
+                          return DropdownMenuItem<
+                              img.Image Function(img.Image)>(
                             value: value,
                             child:
                                 Text(ditherFunctionsToAlgoNames[value] ?? ""),

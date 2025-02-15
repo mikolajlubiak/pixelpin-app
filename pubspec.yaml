@@ -21,6 +21,7 @@ dependencies:
     git:
       url: https://github.com/Penfore/dither_it.git
       ref: main
+  quiver: ^3.2.2
 
 dev_dependencies:
   build_runner: ^2.3.3

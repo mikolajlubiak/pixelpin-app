@@ -11,7 +11,6 @@ import 'package:edown/src/img/img.dart';
 import 'characteristic_interaction_dialog.dart';
 import 'package:edown/src/ble/write_image.dart';
 import 'package:flutter/services.dart';
-import 'package:quiver/async.dart';
 
 part 'device_interaction_tab.g.dart';
 
@@ -97,11 +96,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late Uint8List monoBuffer;
   late Uint8List colorBuffer;
 
-  TextEditingController timeInput = TextEditingController();
-
-  int timerStart = 0;
-  int sleepTimer = 0;
-
   String writeOutput = "Select file to send";
 
   Image? selectedImage = null;
@@ -137,50 +131,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     setState(() {
       discoveredServices = result;
     });
-  }
-
-  void startTimer() {
-    timerStart = int.parse(timeInput.text);
-    CountdownTimer countDownTimer = new CountdownTimer(
-      new Duration(seconds: timerStart),
-      new Duration(seconds: 1),
-    );
-
-    var sub = countDownTimer.listen(null);
-    sub.onData((duration) {
-      setState(() {
-        sleepTimer = timerStart - duration.elapsed.inSeconds;
-      });
-    });
-
-    sub.onDone(() {
-      sub.cancel();
-    });
-  }
-
-  Future<void> sleep() async {
-    while (!widget.viewModel.deviceConnected) {
-      await Future.delayed(Duration(milliseconds: 100));
-    }
-
-    await discoverServices();
-
-    final Service service = discoveredServices
-        .where((service) => service.id == SERVICE_UUID)
-        .single;
-
-    final Characteristic characteristic = service.characteristics
-        .where((characteristic) => characteristic.id == CHARACTERISTIC_UUID)
-        .single;
-
-    startTimer();
-
-    String timeInMicroseconds =
-        (int.parse(timeInput.text) * 1000000).toString();
-
-    await characteristic.write(utf8.encode("SLEEP"));
-    await characteristic.write(utf8.encode(timeInMicroseconds),
-        withResponse: false);
   }
 
   Future<void> sendImage() async {
@@ -266,36 +216,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                       Text(
                         "Status: $writeOutput",
                         style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      if (sleepTimer > 0) ...[
-                        Text(
-                          "Sleep time left: $sleepTimer",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ]
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 16.0),
-                  child: Wrap(
-                    alignment: WrapAlignment.spaceEvenly,
-                    children: <Widget>[
-                      TextFormField(
-                        controller: timeInput,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                        decoration: InputDecoration(
-                            labelText: "Sleep time",
-                            hintText:
-                                "The ammount of time (in seconds) you want to put the microcontroller into deep sleep mode.",
-                            icon: Icon(Icons.timelapse)),
-                      ),
-                      ElevatedButton(
-                        onPressed: sleep,
-                        child: const Text("Put to sleep"),
                       ),
                     ],
                   ),

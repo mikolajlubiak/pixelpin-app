@@ -160,7 +160,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
       selectedImage = Image.memory(img.encodePng(image), fit: BoxFit.scaleDown);
 
+      if (image.width > image.height) {
+        image = img.copyRotate(image, angle: 90);
+      }
+
       image = img.copyResize(image, width: 128);
+      image = img.copyCrop(image, x: 0, y: 0, width: 128, height: 296);
+
       image = ditherFunction(image);
 
       ditheredImage = Image.memory(img.encodePng(image), fit: BoxFit.scaleDown);

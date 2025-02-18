@@ -194,18 +194,18 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       setState(() {
         writeOutput = "Image sent.";
       });
+
+      await characteristic.write(utf8.encode("END"));
+      await characteristic.write(utf8.encode("DRAW"));
+
+      setState(() {
+        writeOutput = "Image drawn";
+      });
     } else {
       setState(() {
         writeOutput = "No file selected";
       });
     }
-
-    await characteristic.write(utf8.encode("END"));
-    await characteristic.write(utf8.encode("DRAW"));
-
-    setState(() {
-      writeOutput = "Image drawn";
-    });
   }
 
   @override

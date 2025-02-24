@@ -73,6 +73,10 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
   void disconnect() {
     deviceConnector.disconnect(deviceId);
   }
+
+  Future<void> change_priority(ConnectionPriority priority) async {
+    await deviceConnector.change_priority(deviceId, priority);
+  }
 }
 
 class _DeviceInteractionTab extends StatefulWidget {
@@ -180,6 +184,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       setState(() {
         writeOutput = "Sending image.";
       });
+
+      await widget.viewModel
+          .change_priority(ConnectionPriority.highPerformance);
+
       await characteristic.write(utf8.encode("BEGIN"));
 
       await characteristic.write(utf8.encode("MONO BUFFER"));
@@ -194,6 +202,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
       await characteristic.write(utf8.encode("END"));
       await characteristic.write(utf8.encode("DRAW"));
+
+      await widget.viewModel.change_priority(ConnectionPriority.lowPower);
 
       setState(() {
         writeOutput = "Image drawn";

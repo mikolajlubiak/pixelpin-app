@@ -34,10 +34,7 @@ class BleDeviceConnector extends ReactiveState<ConnectionStateUpdate> {
           _logMessage('Connecting to device $deviceId resulted in error $e'),
     );
 
-    final _ = await _ble.requestMtu(deviceId: deviceId, mtu: BLE_MTU);
-
-    await _ble.requestConnectionPriority(
-        deviceId: deviceId, priority: ConnectionPriority.highPerformance);
+    await _ble.requestMtu(deviceId: deviceId, mtu: BLE_MTU);
   }
 
   Future<void> disconnect(String deviceId) async {
@@ -60,5 +57,17 @@ class BleDeviceConnector extends ReactiveState<ConnectionStateUpdate> {
 
   Future<void> dispose() async {
     await _deviceConnectionController.close();
+  }
+
+  Future<void> change_priority(
+      String deviceId, ConnectionPriority priority) async {
+    try {
+      _logMessage('changing priority: $priority');
+      await _ble.requestConnectionPriority(
+          deviceId: deviceId, priority: priority);
+      await _connection.cancel();
+    } on Exception catch (e, _) {
+      _logMessage("Error changing priority: $e");
+    }
   }
 }

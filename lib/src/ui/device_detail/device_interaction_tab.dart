@@ -9,14 +9,11 @@ import 'dart:convert';
 import 'package:image/image.dart' as img;
 import 'package:edown/src/img/img.dart';
 import 'characteristic_interaction_dialog.dart';
-import 'package:edown/src/ble/write_image.dart';
+import 'package:edown/src/ble/ble_write_image.dart';
 import 'package:flutter/services.dart';
+import 'package:edown/src/ble/ble_hardcoded.dart';
 
 part 'device_interaction_tab.g.dart';
-
-final Uuid SERVICE_UUID = Uuid.parse("4fafc201-1fb5-459e-8fcc-c5c9c331914b");
-final Uuid CHARACTERISTIC_UUID =
-    Uuid.parse("beb5483e-36e1-4688-b7f5-ea07361b26a8");
 
 class DeviceInteractionTab extends StatelessWidget {
   const DeviceInteractionTab({

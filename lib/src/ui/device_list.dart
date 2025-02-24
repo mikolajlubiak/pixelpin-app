@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:edown/src/ble/ble_scanner.dart';
 import 'package:provider/provider.dart';
+import 'package:edown/src/ble/ble_hardcoded.dart';
 
 import '../ble/ble_logger.dart';
 import '../widgets.dart';
@@ -47,39 +48,8 @@ class _DeviceList extends StatefulWidget {
 }
 
 class _DeviceListState extends State<_DeviceList> {
-  late TextEditingController _uuidController;
-
-  @override
-  void initState() {
-    super.initState();
-    _uuidController = TextEditingController()
-      ..addListener(() => setState(() {}));
-  }
-
-  @override
-  void dispose() {
-    widget.stopScan();
-    _uuidController.dispose();
-    super.dispose();
-  }
-
-  bool _isValidUuidInput() {
-    final uuidText = _uuidController.text;
-    if (uuidText.isEmpty) {
-      return true;
-    } else {
-      try {
-        Uuid.parse(uuidText);
-        return true;
-      } on Exception {
-        return false;
-      }
-    }
-  }
-
   void _startScanning() {
-    final text = _uuidController.text;
-    widget.startScan(text.isEmpty ? [] : [Uuid.parse(_uuidController.text)]);
+    widget.startScan([SERVICE_UUID]);
   }
 
   @override
@@ -94,28 +64,13 @@ class _DeviceListState extends State<_DeviceList> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /*
-                  const SizedBox(height: 16),
-                  const Text('Service UUID (2, 4, 16 bytes):'),
-                  TextField(
-                    controller: _uuidController,
-                    enabled: !widget.scannerState.scanIsInProgress,
-                    decoration: InputDecoration(
-                        errorText:
-                            _uuidController.text.isEmpty || _isValidUuidInput()
-                                ? null
-                                : 'Invalid UUID format'),
-                    autocorrect: false,
-                  ),
-                  */
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton(
                         child: const Text('Scan'),
-                        onPressed: !widget.scannerState.scanIsInProgress &&
-                                _isValidUuidInput()
+                        onPressed: !widget.scannerState.scanIsInProgress
                             ? _startScanning
                             : null,
                       ),

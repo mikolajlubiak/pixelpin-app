@@ -183,10 +183,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       await characteristic.write(utf8.encode("BEGIN"));
 
       await characteristic.write(utf8.encode("MONO BUFFER"));
-      await writeInChunks(monoBuffer, 512, characteristic);
+      await writeInChunks(monoBuffer, BLE_MTU, characteristic);
 
       await characteristic.write(utf8.encode("COLOR BUFFER"));
-      await writeInChunks(colorBuffer, 512, characteristic);
+      await writeInChunks(colorBuffer, BLE_MTU, characteristic);
 
       setState(() {
         writeOutput = "Image sent.";

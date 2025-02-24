@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:edown/src/ble/ble_hardcoded.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:edown/src/ble/reactive_state.dart';
 
@@ -32,6 +33,11 @@ class BleDeviceConnector extends ReactiveState<ConnectionStateUpdate> {
       onError: (Object e) =>
           _logMessage('Connecting to device $deviceId resulted in error $e'),
     );
+
+    final _ = await _ble.requestMtu(deviceId: deviceId, mtu: BLE_MTU);
+
+    await _ble.requestConnectionPriority(
+        deviceId: deviceId, priority: ConnectionPriority.highPerformance);
   }
 
   Future<void> disconnect(String deviceId) async {

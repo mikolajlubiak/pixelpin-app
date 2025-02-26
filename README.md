@@ -1,6 +1,6 @@
 ![Logo icon](docs/icon.png "Logo icon")
 
-### Embedded code for the PixelPin pins.
+### Application code for the PixelPin pins.
 
 ## Showcase:
 * **E-Paper**:

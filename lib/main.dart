@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:edown/src/ble/ble_device_connector.dart';
-import 'package:edown/src/ble/ble_device_interactor.dart';
-import 'package:edown/src/ble/ble_scanner.dart';
-import 'package:edown/src/ble/ble_status_monitor.dart';
-import 'package:edown/src/ui/ble_status_screen.dart';
-import 'package:edown/src/ui/device_list.dart';
+import 'package:pixelpin/src/ble/ble_device_connector.dart';
+import 'package:pixelpin/src/ble/ble_device_interactor.dart';
+import 'package:pixelpin/src/ble/ble_scanner.dart';
+import 'package:pixelpin/src/ble/ble_status_monitor.dart';
+import 'package:pixelpin/src/ui/ble_status_screen.dart';
+import 'package:pixelpin/src/ui/device_list.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -63,7 +63,7 @@ Future<void> main() async {
         ),
       ],
       child: MaterialApp(
-        title: 'EDown',
+        title: 'PixelPin',
         color: _themeColor,
         theme: ThemeData(primarySwatch: _themeColor),
         home: const HomeScreen(),

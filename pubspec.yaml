@@ -1,5 +1,5 @@
-name: edown
-description: Application for the EDown pins.
+name: pixelpin
+description: Application for the PixelPin pins.
 version: 0.0.1
 publish_to: 'none'
 

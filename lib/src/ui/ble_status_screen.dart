@@ -11,7 +11,7 @@ class BleStatusScreen extends StatelessWidget {
       case BleStatus.unsupported:
         return "This device does not support Bluetooth";
       case BleStatus.unauthorized:
-        return "Authorize the EDown app to use Bluetooth and location";
+        return "Authorize the PixelPin app to use Bluetooth and location";
       case BleStatus.poweredOff:
         return "Bluetooth is powered off on your device turn it on";
       case BleStatus.locationServicesDisabled:

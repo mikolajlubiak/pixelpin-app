@@ -1,4 +1,4 @@
-package com.lubiak.edown
+package com.lubiak.pixelpin
 
 import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity

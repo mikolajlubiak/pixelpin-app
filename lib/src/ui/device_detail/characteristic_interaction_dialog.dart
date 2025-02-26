@@ -5,7 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:edown/src/ble/ble_device_interactor.dart';
+import 'package:pixelpin/src/ble/ble_device_interactor.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 

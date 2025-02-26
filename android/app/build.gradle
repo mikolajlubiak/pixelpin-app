@@ -40,7 +40,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.lubiak.edown"
+        applicationId "com.lubiak.pixelpin"
         minSdkVersion 21
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
@@ -53,7 +53,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-    namespace 'com.lubiak.edown'
+    namespace 'com.lubiak.pixelpin'
 
     lint {
         disable 'InvalidPackage'

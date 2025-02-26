@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:edown/src/ble/ble_device_connector.dart';
-import 'package:edown/src/ui/device_detail/device_log_tab.dart';
+import 'package:pixelpin/src/ble/ble_device_connector.dart';
+import 'package:pixelpin/src/ui/device_detail/device_log_tab.dart';
 import 'package:provider/provider.dart';
 
 import 'device_interaction_tab.dart';

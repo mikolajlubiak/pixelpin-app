@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:edown/src/ble/ble_device_connector.dart';
-import 'package:edown/src/ble/ble_device_interactor.dart';
+import 'package:pixelpin/src/ble/ble_device_connector.dart';
+import 'package:pixelpin/src/ble/ble_device_interactor.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
 import 'package:image/image.dart' as img;
-import 'package:edown/src/img/img.dart';
+import 'package:pixelpin/src/img/img.dart';
 import 'characteristic_interaction_dialog.dart';
-import 'package:edown/src/ble/ble_write_image.dart';
+import 'package:pixelpin/src/ble/ble_write_image.dart';
 import 'package:flutter/services.dart';
-import 'package:edown/src/ble/ble_hardcoded.dart';
+import 'package:pixelpin/src/ble/ble_hardcoded.dart';
 
 part 'device_interaction_tab.g.dart';
 

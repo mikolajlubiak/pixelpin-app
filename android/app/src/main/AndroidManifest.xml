@@ -27,7 +27,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="30" />
 
     <application
-        android:label="pixelpin"
+        android:label="PixelPin"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name="com.lubiak.pixelpin.MainActivity"

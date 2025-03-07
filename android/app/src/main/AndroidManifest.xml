@@ -28,7 +28,7 @@
 
     <application
         android:label="PixelPin"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name="com.lubiak.pixelpin.MainActivity"
             android:launchMode="singleTop"

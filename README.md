@@ -12,5 +12,6 @@
     * ![E-Paper showcase](docs/epd6.jpg "E-Paper showcase")
     * ![E-Paper showcase](docs/epd7.jpg "E-Paper showcase")
 * **App**:
-    * ![App showcase](docs/app.jpg "App showcase")
+    * ![App showcase](docs/app1.jpg "App showcase")
+    * ![App showcase](docs/app2.jpg "App showcase")
 

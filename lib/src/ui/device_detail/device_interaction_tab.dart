@@ -94,8 +94,9 @@ class _DeviceInteractionTab extends StatefulWidget {
 class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late List<Service> discoveredServices;
 
-  late Uint8List monoBuffer;
-  late Uint8List colorBuffer;
+  late Uint8List epdMonoBuffer;
+  late Uint8List epdColorBuffer;
+  late Uint8List tftBuffer;
 
   String writeOutput = "Select file to send";
 
@@ -172,14 +173,24 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
       ditheredImage = Image.memory(img.encodePng(image), fit: BoxFit.scaleDown);
 
-      monoBuffer = Uint8List(image.height * (image.width / 8).ceil());
-      colorBuffer = Uint8List(image.height * (image.width / 8).ceil());
-
+      if (DEVICE_TYPE == DeviceType.EPD) {
+        epdMonoBuffer = Uint8List(image.height * (image.width / 8).ceil());
+        epdColorBuffer = Uint8List(image.height * (image.width / 8).ceil());
+      } else if (DEVICE_TYPE == DeviceType.TFT) {
+        tftBuffer = Uint8List(image.height * (image.width / 8).ceil());
+      }
       setState(() {
         writeOutput = "Converting image.";
       });
-      convertImage(image.convert(format: img.Format.uint8, numChannels: 3),
-          monoBuffer, colorBuffer);
+
+      if (DEVICE_TYPE == DeviceType.EPD) {
+        convertImage(image.convert(format: img.Format.uint8, numChannels: 3),
+            epdMonoBuffer, epdColorBuffer);
+      } else if (DEVICE_TYPE == DeviceType.TFT) {
+        tftBuffer = image
+            .convert(format: img.Format.uint8, numChannels: 3)
+            .getBytes(order: img.ChannelOrder.rgb);
+      }
 
       setState(() {
         writeOutput = "Sending image.";
@@ -190,11 +201,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
       await characteristic.write(utf8.encode("BEGIN"));
 
-      await characteristic.write(utf8.encode("MONO BUFFER"));
-      await writeInChunks(monoBuffer, BLE_MTU, characteristic);
+      if (DEVICE_TYPE == DeviceType.EPD) {
+        await characteristic.write(utf8.encode("MONO BUFFER"));
+        await writeInChunks(epdMonoBuffer, BLE_MTU, characteristic);
 
-      await characteristic.write(utf8.encode("COLOR BUFFER"));
-      await writeInChunks(colorBuffer, BLE_MTU, characteristic);
+        await characteristic.write(utf8.encode("COLOR BUFFER"));
+        await writeInChunks(epdColorBuffer, BLE_MTU, characteristic);
+      } else if (DEVICE_TYPE == DeviceType.TFT) {
+        await characteristic.write(utf8.encode("TFT BUFFER"));
+        await writeInChunks(tftBuffer, BLE_MTU, characteristic);
+      }
 
       setState(() {
         writeOutput = "Image sent.";

@@ -166,8 +166,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         image = img.copyRotate(image, angle: 90);
       }
 
-      image = img.copyResize(image, width: 128);
-      image = img.copyCrop(image, x: 0, y: 0, width: 128, height: 296);
+      image = img.copyResize(image, width: WIDTH);
+      image = img.copyCrop(image, x: 0, y: 0, width: WIDTH, height: HEIGHT);
 
       image = ditherFunction(image);
 
@@ -177,7 +177,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         epdMonoBuffer = Uint8List(image.height * (image.width / 8).ceil());
         epdColorBuffer = Uint8List(image.height * (image.width / 8).ceil());
       } else if (DEVICE_TYPE == DeviceType.TFT) {
-        tftBuffer = Uint8List(image.height * (image.width / 8).ceil());
+        tftBuffer = Uint8List(image.height * image.width * 2);
       }
       setState(() {
         writeOutput = "Converting image.";
@@ -187,9 +187,26 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         convertImage(image.convert(format: img.Format.uint8, numChannels: 3),
             epdMonoBuffer, epdColorBuffer);
       } else if (DEVICE_TYPE == DeviceType.TFT) {
-        tftBuffer = image
+        final Uint8List rgbBytes = image
             .convert(format: img.Format.uint8, numChannels: 3)
             .getBytes(order: img.ChannelOrder.rgb);
+
+        for (int y = 0; y < image.height; y++) {
+          for (int x = 0; x < image.width; x++) {
+            int image_index = (y * image.width + x) * 3;
+
+            int r = rgbBytes[image_index];
+            int g = rgbBytes[image_index + 1];
+            int b = rgbBytes[image_index + 2];
+
+            int rgb565 = (r << 11) | (g << 5) | b; // Combine into RGB565 format
+
+            // Store in the buffer
+            int index = (y * image.width + x) * 2;
+            tftBuffer[index] = (rgb565 >> 8) & 0xFF; // High byte
+            tftBuffer[index + 1] = rgb565 & 0xFF; // Low byte
+          }
+        }
       }
 
       setState(() {

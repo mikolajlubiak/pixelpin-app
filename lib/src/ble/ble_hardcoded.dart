@@ -9,3 +9,9 @@ final Uuid CHARACTERISTIC_UUID =
 final BLE_MTU = 512;
 
 final DEVICE_TYPE = DeviceType.TFT;
+
+// final WIDTH = 128;
+// final HEIGHT = 296;
+
+final WIDTH = 240;
+final HEIGHT = 320;

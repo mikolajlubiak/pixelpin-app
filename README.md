@@ -1,10 +1,8 @@
 ![Logo icon](docs/icon.png "Logo icon")
 
-# PixelPin
+# PixelPin app
 
-PixelPin is a wearable e-paper display pin powered by an ESP32. It receives images over Bluetooth Low Energy (BLE) from a companion Flutter app using a custom binary protocol, applies Floyd-Steinberg dithering to convert full-color images to a 3-color (black, white, red) palette, and renders them to a 2.9-inch tri-color e-paper display. The device enters deep sleep after 5 minutes of inactivity and wakes on a button press, making it suitable for wearable use.
-
-This repository contains the app code written in Dart/Fluter. The companion ESP32 firmware along with more documentation lives at [pixelpin](https://github.com/mikolajlubiak/pixelpin).
+Flutter companion app for [PixelPin](https://github.com/mikolajlubiak/pixelpin), a wearable Bluetooth e-paper badge. It finds the badge over Bluetooth Low Energy, prepares an image for its 2.9-inch 128×296 black/white/red e-paper panel and streams it with the badge's custom protocol. The firmware, wiring and protocol specification live in the [pixelpin](https://github.com/mikolajlubiak/pixelpin) repository.
 
 ## Showcase
 
@@ -28,26 +26,27 @@ This repository contains the app code written in Dart/Fluter. The companion ESP3
   <a href="docs/app2.jpg"><img src="docs/app2.jpg" height="220" alt="App showcase 2"></a>
 </p>
 
-## Features
+## What the app does
 
-- **BLE image transfer** using a custom binary protocol with text-based command framing and raw binary data streaming
-- **Floyd-Steinberg dithering** for high-quality 3-color (black/white/red) rendering on e-paper
-- **Custom state machine** for reliable chunked BLE transfers across multiple write operations
-- **Dual display support**: 2.9-inch tri-color e-paper (primary) or 240×320 TFT LCD (via compile flag)
-- **Power management**: deep sleep after 5 minutes of inactivity, GPIO wake-up on button press (ESP32-C3)
-- **Flutter app** for image selection, processing, and BLE transmission
-- **Companion ESP32 firmware** in C++ using the Arduino framework via PlatformIO
+1. **Scan and connect:** scans for devices advertising the PixelPin service UUID and connects with flutter_reactive_ble, requesting a 512-byte MTU.
+2. **Prepare the image:** decodes the picked file, rotates landscape images by 90°, resizes to 128 px wide and crops to 128×296.
+3. **Dither (optional):** Floyd–Steinberg, ordered (8×8 matrix) or Riemersma dithering through the [dither_it](https://github.com/Penfore/dither_it) package, with a preview of the result.
+4. **Convert:** classifies every pixel as white (luma above 128), red (red-dominant) or black and packs the result into two 1-bit planes, MSB first: 4,736 bytes each for the panel's black and red layers.
+5. **Upload:** switches the connection to high priority, sends `BEGIN`, both planes in 512-byte writes, `END` and `DRAW`, then drops back to a low-power connection.
 
-## How It Works
+## Tech Stack
 
-```
-Phone App  ──BLE──►  ESP32  ──RGB565──►  Dithering  ──1-bit buffers──►  E-Paper Display
-(Flutter)             |                  (Floyd-                          (black/white/red)
-                      |                   Steinberg)
-                      └── Deep sleep after 5 min inactivity
-```
+`Dart` `Flutter` `Bluetooth Low Energy` `flutter_reactive_ble` `image` `dither_it`
 
-1. The Flutter app converts the selected image to RGB565 format and sends it over BLE using the [custom binary protocol](docs/BLE_PROTOCOL.md).
-2. The ESP32 firmware receives the image in chunks, accumulating data into two 1-bit framebuffers (monochrome and color).
-3. After the full image is received, the firmware runs Floyd-Steinberg dithering, mapping each pixel to one of three values: black, white, or red.
-4. The two framebuffers are sent to the e-paper display driver (GxEPD2), which handles the SPI communication and display refresh cycle.
+## Build
+
+- Install Flutter 3.35.5 (pinned in `.fvmrc`; with [FVM](https://fvm.app/), run `fvm install` and use `fvm flutter`)
+- `git clone https://github.com/mikolajlubiak/pixelpin-app`
+- `cd pixelpin-app`
+- `flutter pub get`
+- Connect an Android or iOS device and run `flutter run`
+
+## Credits
+
+- Built with [flutter_reactive_ble](https://github.com/PhilipsHue/flutter_reactive_ble), [image](https://pub.dev/packages/image) and [dither_it](https://github.com/Penfore/dither_it) (MIT).
+- Third-party license notices are in [NOTICE](NOTICE).
